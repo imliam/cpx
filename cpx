@@ -1,0 +1,291 @@
+#! /usr/bin/env php
+<?php
+
+use Cpx\Commands\CheckCommand;
+use Cpx\Console;
+use Cpx\Package;
+use Cpx\Composer;
+use Cpx\Metadata;
+use Cpx\PackageAliases;
+use Cpx\PackageMetadata;
+use Cpx\Commands\Command;
+use Cpx\Commands\HelpCommand;
+use Cpx\Commands\ListCommand;
+use Cpx\Commands\CleanCommand;
+use Cpx\Commands\ExecCommand;
+use Cpx\Commands\FormatCommand;
+use Cpx\Commands\UpdateCommand;
+use Cpx\Commands\AliasesCommand;
+use Cpx\Commands\TestCommand;
+use Cpx\Commands\UpgradeCommand;
+use Cpx\Utils;
+
+require_once __DIR__ . '/vendor/autoload.php';
+
+define('UPDATE_CHECK_INTERVAL', 3600); // 1 hour
+define('CPX_COLOR', "\033[1;32m"); // ANSI Green for cpx output
+define('RESET_COLOR', "\033[0m");
+
+function ensureDirectoryExists(string $directory): void
+{
+    if (!is_dir($directory)) {
+        mkdir($directory, 0755, true);
+    }
+}
+
+function printColor(string $message, string $color = CPX_COLOR): void
+{
+    echo $color . $message . RESET_COLOR . PHP_EOL;
+}
+
+/** Get a list of bin scripts from a package's composer.json file */
+function detectBinFromComposer(string $packageDir): array
+{
+    $composerFile = "$packageDir/composer.json";
+
+    if (file_exists($composerFile)) {
+        $composerData = json_decode(file_get_contents($composerFile), true);
+
+        if (isset($composerData['bin'])) {
+            return $composerData['bin'];
+        }
+    }
+
+    return [];
+}
+
+function installOrUpdatePackage(Package $package, bool $updateCheck = true): string
+{
+    $installDir = cpx_dir($package->folder());
+    ensureDirectoryExists($installDir);
+
+
+    if (!is_dir("$installDir/vendor")) {
+        printColor("Installing {$package}...");
+        file_put_contents("{$installDir}/composer.json", json_encode([
+            'name' => "cpx-{$package->vendor}/cpx-{$package->name}",
+            'version' => '1.0.0',
+        ]));
+        // Composer::runCommand("init --name=cpx-{$package->name} --version=1.0.0 --no-interaction", $installDir);
+
+        if ($package->version === null) {
+            Composer::runCommand("require {$package->vendor}/{$package->name} --no-interaction --no-progress", $installDir);
+        } else {
+            Composer::runCommand("require {$package->vendor}/{$package->name}:{$package->version} --no-interaction --no-progress", $installDir);
+        }
+
+        updateLastCheckTime($package, 'updated');
+    } elseif ($updateCheck && shouldCheckForUpdates($package)) {
+        printColor("Checking for updates for {$package}...");
+        $previousVersion = getCurrentVersion($installDir);
+        Composer::runCommand("update", $installDir);
+        $newVersion = getCurrentVersion($installDir);
+
+        if ($previousVersion !== $newVersion) {
+            printColor("{$package} was upgraded from $previousVersion to $newVersion.");
+        } else {
+            printColor("{$package} is already up-to-date.");
+        }
+
+        updateLastCheckTime($package, 'updated');
+    } else {
+        printColor("{$package} is already installed and doesn't need updating.");
+    }
+
+    return $installDir;
+}
+
+// Check if updates should be checked (once per hour)
+function shouldCheckForUpdates(Package $package): bool
+{
+    $metadata = Metadata::open();
+    $packageKey = $package->fullPackageString();
+
+    if (!$metadata->hasPackage($package)) {
+        return true;
+    }
+
+    $lastCheck = strtotime($metadata->packages[$packageKey]->lastUpdatedAt);
+
+    return (time() - $lastCheck) > UPDATE_CHECK_INTERVAL;
+}
+
+// Update last check or last run time in metadata
+function updateLastCheckTime(Package $package, string $type = 'run'): void
+{
+    $metadata = Metadata::open();
+    $packageKey = $package->fullPackageString();
+    $currentTime = date('Y-m-d H:i:s');
+
+    if (!isset($metadata->packages[$packageKey])) {
+        $metadata->packages[$packageKey] = new PackageMetadata($package);
+    }
+
+    if ($type === 'run') {
+        $metadata->packages[$packageKey]->lastRunAt = $currentTime;
+    } else {
+        $metadata->packages[$packageKey]->lastUpdatedAt = $currentTime;
+    }
+
+    $metadata->save();
+}
+
+// Get the current installed version from composer.lock
+function getCurrentVersion(string $dir): string
+{
+    $composerLock = "$dir/composer.lock";
+
+    if (file_exists($composerLock)) {
+        $lockData = json_decode(file_get_contents($composerLock), true);
+
+        return $lockData['packages'][0]['version'] ?? 'unknown';
+    }
+
+    return 'unknown';
+}
+
+// Update all installed packages
+function updatePackages($vendorOrPackage = null): void
+{
+    $metadata = Metadata::open();
+    $updated = false;
+
+    foreach ($metadata->packages as $packageKey => $packageMetadata) {
+        if ($vendorOrPackage && strpos($packageKey, $vendorOrPackage) !== 0) {
+            continue;
+        }
+
+        $package = $packageMetadata->package;
+
+        printColor("Updating {$package}...");
+        installOrUpdatePackage($package, true);
+        $updated = true;
+    }
+
+    if (!$updated) {
+        printColor("No packages found for update.");
+    }
+}
+
+// Main function to handle the command
+function runCommand(Package $package, Console $console, bool $autoUpdate = true): void
+{
+    $installDir = installOrUpdatePackage($package, $autoUpdate);
+
+    $binScripts = detectBinFromComposer("{$installDir}/vendor/{$package->vendor}/{$package->name}");
+
+    if (empty($binScripts)) {
+        printColor("Error: No bin command found in {$package}.", "\033[1;31m");
+        exit(1);
+    }
+
+    $binScripts = Utils::arrayMapAssoc(fn ($key, $value) => [basename($value) => $value], $binScripts);
+
+    if (count($binScripts) > 1) {
+        $possibleCommands = array_values(array_unique(array_filter([
+            $console->command,
+            $console->arguments[0] ?? null,
+            str_contains($console->command, '/') ? Package::parse($console->command)->name : null,
+        ])));
+
+        foreach ($possibleCommands as $possibleCommand) {
+            if (in_array($possibleCommand, $binScripts)) {
+                if ($console->arguments[0] ?? null === $possibleCommand) {
+                    unset($console->arguments[0]);
+                    $console->arguments = array_values($console->arguments);
+                }
+                $command = $possibleCommand;
+                break;
+            } elseif (array_key_exists($possibleCommand, $binScripts)) {
+                if ($console->arguments[0] ?? null === $possibleCommand) {
+                    unset($console->arguments[0]);
+                    $console->arguments = array_values($console->arguments);
+                }
+                $command = $binScripts[$possibleCommand];
+                break;
+            }
+        }
+
+        if (!isset($command)) {
+            echo Command::BACKGROUND_RED . "   More than 1 bin command found for {$package}: " . join(', ', array_keys($binScripts)) . '   ' . Command::COLOR_RESET . PHP_EOL;
+            exit();
+        }
+    } else {
+        $command = $binScripts[array_key_first($binScripts)];
+    }
+
+    $binPath = "$installDir/vendor/{$package->vendor}/{$package->name}/$command";
+
+    if (file_exists($binPath)) {
+        updateLastCheckTime($package); // Update last run time
+
+        // Prepare the command to run
+        $cmd = "{$binPath} {$console->getCommandInput()}";
+
+        // Use proc_open for better control of the process and to maintain colors and interactivity
+        $descriptors = [
+            0 => STDIN,
+            1 => STDOUT,
+            2 => STDERR,
+        ];
+
+        printColor("Running {$command} from {$package}");
+
+        $process = proc_open($cmd, $descriptors, $pipes);
+
+        if (is_resource($process)) {
+            proc_close($process);
+        }
+    } else {
+        echo "Error: Command $command not found in {$package}.\n";
+    }
+}
+
+array_shift($argv);
+$console = Console::parse($argv ?? []);
+
+$command = match($console->command) {
+    'list' => ListCommand::class,
+    'help' => HelpCommand::class,
+    'clean' => CleanCommand::class,
+    'aliases' => AliasesCommand::class,
+    'update' => UpdateCommand::class,
+    'upgrade' => UpgradeCommand::class,
+    'exec' => ExecCommand::class,
+    'format', 'fmt' => FormatCommand::class,
+    'check', 'analyze', 'analyse' => CheckCommand::class,
+    'test' => TestCommand::class,
+    default => function () use ($console) {
+        if (file_exists(realpath($console->command))) {
+            return (new ExecCommand(Console::parse("exec {$console->command} {$console->getCommandInput()}")))();
+        } elseif (array_key_exists($console->command, PackageAliases::$packages)) {
+            runCommand(Package::parse(PackageAliases::$packages[$console->command]['package']), $console);
+            return;
+        } elseif (str_contains($console->command, '/')) {
+            // Run the command, assuming the default bin and forwarding args
+            runCommand(Package::parse($console->command), $console);
+            return;
+        }
+
+        $cpxConsole = Console::parse("cpx {$console}");
+
+        if ($cpxConsole->hasOption('version') || $cpxConsole->hasOption('v')) {
+            echo 'cpx version: ' . Command::COLOR_GREEN . 'unknown' . Command::COLOR_RESET . PHP_EOL;
+            echo 'php version: ' . Command::COLOR_GREEN . PHP_VERSION . Command::COLOR_RESET . PHP_EOL;
+            return;
+        }
+
+        return (new HelpCommand($console))(true);
+    },
+};
+
+try {
+    if (is_subclass_of($command, Command::class)) {
+        $command = new $command($console);
+        $command();
+    } elseif (is_callable($command)) {
+        $command();
+    }
+} catch (Exception $e) {
+    echo Command::BACKGROUND_RED . "  {$e->getMessage()}  " . Command::COLOR_RESET . PHP_EOL;
+}

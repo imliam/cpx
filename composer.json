@@ -1,0 +1,22 @@
+{
+    "name": "cpx/cpx",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Cpx\\": "src/"
+        },
+        "files": [
+            "src/functions.php"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Liam Hammett",
+            "email": "liam@liamhammett.com"
+        }
+    ],
+    "require": {},
+    "bin": [
+        "cpx"
+    ]
+}
