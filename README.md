@@ -124,18 +124,3 @@ The code is deliberately written in a way that it doesn't need any dependencies 
 ## Credits
 - [Liam Hammett](https://github.com/imliam)
 - [All Contributors](https://github.com/imliam/cpx/contributors)
-
-## To-do
-
-- Refactor `cpx` to use a class-based approach
-- `cpx serve` wrapper around `php -S` or `php artisan serve` or `php artisan octane:start` or `symfony server:start` etc.
-  - `--detached` flag to run in the background
-  - `--stop` flag to stop the server if in detached mode
-  - `--open` flag to open the page after starting
-  - `--port` flag to specify the port
-  - `--public` flag to run via Expose
-  - Support for other servers like Valet, Homestead, Docker etc.
-  - Support for running frontend assets (eg. `npm run watch`)
-- `cpx exec -r "php-code"` to run a one-liner PHP code snippet
-- Add version number to update messages
-- Add `.cpx.json` config file to specify default behaviour for a given app (eg. different serve commands)

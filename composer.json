@@ -1,6 +1,24 @@
 {
     "name": "cpx/cpx",
+    "description": "Run any command from any composer package, even if it's not installed in your project.",
     "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "composer",
+        "command",
+        "package",
+        "run"
+    ],
+    "support": {
+        "issues": "https://github.com/imliam/cpx/issues",
+        "source": "https://github.com/imliam/cpx"
+    },
+    "authors": [
+        {
+            "name": "Liam Hammett",
+            "email": "liam@liamhammett.com"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Cpx\\": "src/"
@@ -9,13 +27,9 @@
             "src/functions.php"
         ]
     },
-    "authors": [
-        {
-            "name": "Liam Hammett",
-            "email": "liam@liamhammett.com"
-        }
-    ],
-    "require": {},
+    "require": {
+        "php": "^8.2"
+    },
     "bin": [
         "cpx"
     ]
