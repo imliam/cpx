@@ -3,20 +3,42 @@
 namespace Cpx\Commands;
 
 use Cpx\ClassAliasAutoloader;
+use Cpx\PhpExecutionHelper;
 
 class ExecCommand extends Command
 {
     public string $path;
 
-    protected bool $shouldFindAutoloader = true;
-    protected bool $shouldLoadLaravelBootstrap = true;
-    protected bool $shouldAliasClasses = true;
-    protected bool $shouldBeVerbose = false;
-
-    public static ClassAliasAutoloader $classAliasAutoloader;
-
     public function __invoke()
     {
+        if ($this->console->hasOption('r')) {
+            $code = $this->console->getOption('r');
+
+            if (empty($code)) {
+                $this->error('Please supply code to execute with the -r option.');
+                return;
+            }
+
+            if (str_starts_with($code, '<?php')) {
+                $code = substr($code, 5);
+
+                if (str_ends_with(trim($code), '?>')) {
+                    $code = substr($code, 0, -2);
+                }
+            }
+
+            if (!str_ends_with(trim($code), ';')) {
+                $code .= ';';
+            }
+
+            $this->autoload(getcwd());
+
+            eval($code);
+            echo PHP_EOL;
+
+            return;
+        }
+
         if (empty($this->console->arguments[0])) {
             $this->error('Please supply the path to a file to execute.');
             return;
@@ -29,63 +51,23 @@ class ExecCommand extends Command
             return;
         }
 
-        $this->shouldFindAutoloader = $this->console->getOption('find-autoloader') ?? true;
-        $this->shouldLoadLaravelBootstrap = $this->console->getOption('load-laravel-bootstrap') ?? true;
-        $this->shouldAliasClasses = $this->console->getOption('alias-classes') ?? true;
-        $this->shouldBeVerbose = $this->console->getOption('verbose') ?? false;
+        $this->autoload(dirname($this->path));
 
-        if ($this->shouldFindAutoloader) {
-            $this->findAutoloader();
-        }
-
-        $this->run();
+        $this->runFile();
     }
 
-    public function run(): void
+    protected function autoload(string $directory): void
+    {
+        $shouldFindAutoloader = $this->console->getOption('find-autoloader') ?? true;
+        $shouldLoadLaravelBootstrap = $this->console->getOption('load-laravel-bootstrap') ?? true;
+        $shouldAliasClasses = $this->console->getOption('alias-classes') ?? true;
+        $shouldBeVerbose = $this->console->getOption('verbose') ?? false;
+
+        PhpExecutionHelper::init($directory, $shouldFindAutoloader, $shouldLoadLaravelBootstrap, $shouldAliasClasses, $shouldBeVerbose);
+    }
+
+    public function runFile(): void
     {
         require $this->path;
-    }
-
-    protected function findAutoloader(): void
-    {
-        $autoloadRootDirectory = dirname($this->path);
-
-        $autoloadFileSuffix = '/vendor/autoload.php';
-        $autoloadFile = $autoloadRootDirectory . $autoloadFileSuffix;
-
-        while (!file_exists($autoloadFile)) {
-            $autoloadRootDirectory = realpath(dirname($autoloadRootDirectory));
-            $autoloadFile = $autoloadRootDirectory . $autoloadFileSuffix;
-
-            if ($autoloadRootDirectory === '/') {
-                break;
-            }
-        }
-
-        if (file_exists($autoloadFile)) {
-            ob_start();
-
-            require_once $autoloadFile;
-
-            if ($this->shouldLoadLaravelBootstrap && file_exists($autoloadRootDirectory . '/bootstrap/app.php')) {
-                if (!defined('LARAVEL_START')) {
-                    define('LARAVEL_START', microtime(true));
-                }
-
-                require_once $autoloadRootDirectory . '/bootstrap/app.php';
-            }
-
-            ob_clean();
-
-            if ($this->shouldAliasClasses) {
-                $this->getClassAliasAutoloader()->addAliases($autoloadRootDirectory);
-                spl_autoload_register($this->getClassAliasAutoloader()->aliasClass(...));
-            }
-        }
-    }
-
-    public function getClassAliasAutoloader(): ClassAliasAutoloader
-    {
-        return static::$classAliasAutoloader ??= new ClassAliasAutoloader($this->shouldBeVerbose);
     }
 }

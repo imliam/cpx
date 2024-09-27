@@ -1,7 +1,7 @@
 #! /usr/bin/env php
 <?php
 
-use Cpx\Commands\CheckCommand;
+use Cpx\Utils;
 use Cpx\Console;
 use Cpx\Package;
 use Cpx\Composer;
@@ -9,16 +9,17 @@ use Cpx\Metadata;
 use Cpx\PackageAliases;
 use Cpx\PackageMetadata;
 use Cpx\Commands\Command;
+use Cpx\Commands\ExecCommand;
 use Cpx\Commands\HelpCommand;
 use Cpx\Commands\ListCommand;
+use Cpx\Commands\TestCommand;
+use Cpx\Commands\CheckCommand;
 use Cpx\Commands\CleanCommand;
-use Cpx\Commands\ExecCommand;
 use Cpx\Commands\FormatCommand;
+use Cpx\Commands\TinkerCommand;
 use Cpx\Commands\UpdateCommand;
 use Cpx\Commands\AliasesCommand;
-use Cpx\Commands\TestCommand;
 use Cpx\Commands\UpgradeCommand;
-use Cpx\Utils;
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -47,7 +48,7 @@ function detectBinFromComposer(string $packageDir): array
         $composerData = json_decode(file_get_contents($composerFile), true);
 
         if (isset($composerData['bin'])) {
-            return $composerData['bin'];
+            return (array) $composerData['bin'];
         }
     }
 
@@ -59,12 +60,14 @@ function installOrUpdatePackage(Package $package, bool $updateCheck = true): str
     $installDir = cpx_dir($package->folder());
     ensureDirectoryExists($installDir);
 
-
     if (!is_dir("$installDir/vendor")) {
         printColor("Installing {$package}...");
         file_put_contents("{$installDir}/composer.json", json_encode([
             'name' => "cpx-{$package->vendor}/cpx-{$package->name}",
             'version' => '1.0.0',
+            'config' => [
+                'allow-plugins' => true,
+            ],
         ]));
         // Composer::runCommand("init --name=cpx-{$package->name} --version=1.0.0 --no-interaction", $installDir);
 
@@ -255,6 +258,7 @@ $command = match($console->command) {
     'format', 'fmt' => FormatCommand::class,
     'check', 'analyze', 'analyse' => CheckCommand::class,
     'test' => TestCommand::class,
+    'tinker' => TinkerCommand::class,
     default => function () use ($console) {
         if (file_exists(realpath($console->command))) {
             return (new ExecCommand(Console::parse("exec {$console->command} {$console->getCommandInput()}")))();

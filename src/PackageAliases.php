@@ -29,12 +29,6 @@ class PackageAliases
             'command' => 'phploc',
             'package' => 'cmgmyr/phploc',
         ],
-        'phpunit' => [
-            'name' => 'PHPUnit',
-            'description' => 'The most popular testing framework for PHP.',
-            'command' => 'phpunit',
-            'package' => 'phpunit/phpunit',
-        ],
         'rector' => [
             'name' => 'Rector',
             'description' => 'An automated refactoring tool that simplifies upgrades and cleanups in your PHP codebase.',
@@ -77,17 +71,11 @@ class PackageAliases
             'command' => 'pdepend',
             'package' => 'pdepend/pdepend',
         ],
-        'behat' => [
-            'name' => 'Behat',
-            'description' => 'A BDD framework for PHP that helps you test your application\'s behavior.',
-            'command' => 'behat',
-            'package' => 'behat/behat',
-        ],
         'dep' => [
             'name' => 'Deployer',
             'description' => 'A deployment tool for PHP applications.',
             'command' => 'dep',
-            'package' => 'deployphp/deployer',
+            'package' => 'deployer/deployer',
         ],
         'phpbench' => [
             'name' => 'PHPBench',
@@ -101,12 +89,6 @@ class PackageAliases
             'command' => 'phing',
             'package' => 'phing/phing',
         ],
-        'pest' => [
-            'name' => 'Pest',
-            'description' => 'A testing framework for PHP, built on top of PHPUnit with a more streamlined API.',
-            'command' => 'pest',
-            'package' => 'pestphp/pest',
-        ],
         'captainhook' => [
             'name' => 'CaptainHook',
             'description' => 'A tool to manage and configure git hooks for your project.',
@@ -114,7 +96,7 @@ class PackageAliases
             'package' => 'captainhook/captainhook',
         ],
         'infection' => [
-        'name' => 'Infection',
+            'name' => 'Infection',
             'description' => 'A mutation testing framework for PHP.',
             'command' => 'infection',
             'package' => 'infection/infection',
@@ -142,12 +124,6 @@ class PackageAliases
             'description' => 'A tool to deploy PHP applications to AWS Lambda.',
             'command' => 'bref',
             'package' => 'bref/bref',
-        ],
-        'phpqa' => [
-            'name' => 'PHPQA',
-            'description' => 'A tool that aggregates several quality assurance tools (PHPUnit, PHPStan, PHP_CodeSniffer, etc.) into one command.',
-            'command' => 'phpqa',
-            'package' => 'edgedesign/phpqa',
         ],
         'phpspec' => [
             'name' => 'PhpSpec',
@@ -179,12 +155,6 @@ class PackageAliases
             'command' => 'churn',
             'package' => 'bmitch/churn-php',
         ],
-        'phpdoc' => [
-            'name' => 'PHP Documentor',
-            'description' => 'A tool to generate documentation from PHP source code.',
-            'command' => 'phpdoc',
-            'package' => 'phpdocumentor/phpdocumentor',
-        ],
         'sculpin' => [
             'name' => 'Sculpin',
             'description' => 'A static site generator written in PHP.',
@@ -209,65 +179,71 @@ class PackageAliases
             'command' => 'phpinsights',
             'package' => 'nunomaduro/phpinsights',
         ],
-        'sami' => [
-            'name' => 'Sami',
-            'description' => 'A static API documentation generator.',
-            'command' => 'sami',
-            'package' => 'friends-of-symfony/sami',
-        ],
         'couscous' => [
             'name' => 'Couscous',
-            'description' => 'A static site generator for generating documentation from Markdown files.',
+            'description' => 'Static site generator for generating documentation from Markdown files.',
             'command' => 'couscous',
             'package' => 'couscous/couscous',
         ],
         'valet' => [
             'name' => 'Valet',
-            'description' => 'A Laravel-specific tool for managing a development environment with minimal configuration.',
+            'description' => 'Manage a Laravel development environment with minimal configuration.',
             'command' => 'valet',
             'package' => 'laravel/valet',
         ],
         'deptrac' => [
             'name' => 'Deptrac',
-            'description' => 'A static code analysis tool that defines and enforces architectural layers.',
+            'description' => 'Static analysis that defines and enforces architectural layers.',
             'command' => 'deptrac',
             'package' => 'qossmic/deptrac',
         ],
-        'php-daemon' => [
-            'name' => 'PHP Daemon',
-            'description' => 'A simple, fast, and efficient PHP library for writing multi-threaded daemons.',
-            'command' => 'php-daemon',
-            'package' => 'shaneharter/php-daemon',
-        ],
         'php-scoper' => [
             'name' => 'PHP-Scoper',
-            'description' => 'A tool that isolates a PHP library\'s dependencies, useful for creating PHAR files.',
+            'description' => 'Isolate a PHP library\'s dependencies, useful for creating PHAR files.',
             'command' => 'php-scoper',
             'package' => 'humbug/php-scoper',
         ],
         'phpcbf' => [
             'name' => 'Phpcbf',
-            'description' => 'Automatically fixes coding standards issues.',
+            'description' => 'Automatically fix coding standards issues.',
             'command' => 'phpcbf',
             'package' => 'squizlabs/php_codesniffer',
         ],
-        'phpcheck' => [
-            'name' => 'PHPCheck',
-            'description' => 'A static analysis tool focused on finding errors before they reach production.',
-            'command' => 'phpcheck',
-            'package' => 'paragonie/phpcheck',
-        ],
         'phpmd' => [
             'name' => 'PHPMD',
-            'description' => 'A tool for analyzing PHP code for potential problems, based on PHPCPD (Copy/Paste Detector).',
+            'description' => 'Analyze PHP code for potential mess and problems.',
             'command' => 'phpmd',
             'package' => 'phpmd/phpmd',
         ],
-        'spip' => [
-            'name' => 'SPIP',
-            'description' => 'A tool to detect SQL injection vulnerabilities in PHP code.',
-            'command' => 'spip',
-            'package' => 'gregwar/spip',
+        'ecs' => [
+            'name' => 'Easy Coding Standard',
+            'description' => 'Check and fix coding standards in PHP code.',
+            'command' => 'ecs',
+            'package' => 'symplify/easy-coding-standard',
+        ],
+        'config-transformer' => [
+            'name' => 'Config Transformer',
+            'description' => 'Transform configuration files from one format to another.',
+            'command' => 'config-transformer',
+            'package' => 'symplify/config-transformer',
+        ],
+        'class-leak' => [
+            'name' => 'ClassLeak',
+            'description' => 'Spot unused classes you can remove.',
+            'command' => 'class-leak',
+            'package' => 'tomasvotruba/class-leak',
+        ],
+        'composer-dependency-analyser' => [
+            'name' => 'Composer Dependency Analyser',
+            'description' => 'Detect unused dependencies, transitional dependencies, missing classes and more.',
+            'command' => 'composer-dependency-analyser',
+            'package' => 'shipmonk/composer-dependency-analyser',
+        ],
+        'swiss-knife' => [
+            'name' => 'Swiss Knife',
+            'description' => 'Finalize classes without children, make class constants private and more.',
+            'command' => 'swiss-knife',
+            'package' => 'rector/swiss-knife',
         ],
     ];
 }

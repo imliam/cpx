@@ -1,3 +1,5 @@
+![Run Composer packages, efortlessly.](./banner.png)
+
 # cpx - Composer Package Executor
 
 Run any command from any composer package, even if it's not installed in your project.
@@ -20,21 +22,15 @@ You can run a command using cpx by passing through the package name and the comm
 > You can also use constraints to specify a version, e.g. `friendsofphp/php-cs-fixer:^3.0`
 
 ```bash
-cpx <package-name> <command>
-# Example: cpx friendsofphp/php-cs-fixer php-cs-fixer
+cpx <package-name> <command> [arguments]
+# Example: cpx friendsofphp/php-cs-fixer php-cs-fixer fix ./src
 ```
 
-If the package only has one command, you can omit the command from the end:
+If the package only has one command, or the command name is the same as the package's name, you can omit the command from the end:
 
 ```bash
-cpx <package-name>
-# Example: cpx friendsofphp/php-cs-fixer
-```
-
-Any arguments, options or flags you would pass to the command can be passed through as normal:
-
-```bash
-cpx friendsofphp/php-cs-fixer php-cs-fixer fix ./src
+cpx <package-name> [arguments]
+# Example: cpx friendsofphp/php-cs-fixer fix ./src
 ```
 
 Behind the scenes, cpx will install the package into a separate directory and run the command, keeping it separate from both your project and global Composer dependencies. Subsequent runs of the same package will use the same installation and run quickly, unless you specify a different version or there is an update to the package available.
@@ -81,9 +77,15 @@ While cpx will automatically check for updates to a Composer package when you ru
 
 `cpx clean` will remove all the packages you have run via cpx but haven't used recently. `cpx clean --all` will remove all packages regardless of when they have run.
 
-### cpx exec
+### cpx exec and cpx tinker
 
-`cpx exec` is an additional command provided that helps invoking PHP scripts with some additional affordances, particularly for working with scratch files:
+cpx gives you multiple ways to run PHP code quickly, perfect for running scratch files or quickly running code in your project.
+
+- `cpx exec <file.php>` will run a plain PHP file.
+- `cpx exec -r <raw php code>` will execute the given PHP code.
+- `cpx tinker` will open an interactive REPL in the terminal for your project.
+
+When using these commands, you get the following benefits:
 
 - **Automatic Autoloaders** - When running a PHP file, it will automatically detect and use Composer's autoloader if it exists in the current or a parent directory
 - **Class Aliasing** - If a class is used in the file but the namespace isn't imported, cpx will try to find an appropriate one to alias.
@@ -124,3 +126,20 @@ The code is deliberately written in a way that it doesn't need any dependencies 
 ## Credits
 - [Liam Hammett](https://github.com/imliam)
 - [All Contributors](https://github.com/imliam/cpx/contributors)
+
+## To-do
+
+- Refactor `cpx` to use a class-based approach
+- `cpx serve` wrapper around `php -S` or `php artisan serve` or `php artisan octane:start` or `symfony server:start` etc.
+  - `--detached` flag to run in the background
+  - `--stop` flag to stop the server if in detached mode
+  - `--open` flag to open the page after starting
+  - `--port` flag to specify the port
+  - `--public` flag to run via Expose
+  - Support for other servers like Valet, Homestead, Docker etc.
+  - Support for running frontend assets (eg. `npm run watch`)
+- Add version number to update messages
+- Add `.cpx.json` config file to specify default behaviour for a given app (eg. different serve commands)
+- Add support for switching PHP versions?
+- Launch marketing site
+  - Add analytics
