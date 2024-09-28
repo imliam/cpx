@@ -18,7 +18,7 @@ class UpdateCommand extends Command
 
     protected function updateAllPackages(): void
     {
-        $packageDirectories = glob(cpx_dir('*/*/*'), GLOB_ONLYDIR) ?: [];
+        $packageDirectories = glob(cpx_path('*/*/*'), GLOB_ONLYDIR) ?: [];
 
         if (empty($packageDirectories)) {
             $this->line('There are no packages to update.');
@@ -31,7 +31,7 @@ class UpdateCommand extends Command
 
     protected function updateVendor(string $vendor): void
     {
-        $packageDirectories = glob(cpx_dir("{$vendor}/*/*"), GLOB_ONLYDIR) ?: [];
+        $packageDirectories = glob(cpx_path("{$vendor}/*/*"), GLOB_ONLYDIR) ?: [];
 
         if (empty($packageDirectories)) {
             $this->line("There are no packages in vendor '{$vendor}' to update.");
@@ -45,12 +45,12 @@ class UpdateCommand extends Command
     protected function updatePackage(Package $package): void
     {
         if ($package->version) {
-            $this->updateDirectory(cpx_dir($package->folder()));
+            $this->updateDirectory(cpx_path($package->folder()));
 
             return;
         }
 
-        $packageDirectories = glob(cpx_dir("{$package->vendor}/{$package->name}/*"), GLOB_ONLYDIR) ?: [];
+        $packageDirectories = glob(cpx_path("{$package->vendor}/{$package->name}/*"), GLOB_ONLYDIR) ?: [];
 
         if (empty($packageDirectories)) {
             $this->line("There are no installed versions of '{$package->vendor}/{$package->name}' to update.");
@@ -63,7 +63,7 @@ class UpdateCommand extends Command
 
     protected function updateDirectory(string $directory): void
     {
-        $this->line('Updating ' . Command::COLOR_GREEN . str_replace(cpx_dir(), '', $directory));
+        $this->line('Updating ' . Command::COLOR_GREEN . str_replace(cpx_path(), '', $directory));
         Composer::runCommand("update", $directory);
     }
 }

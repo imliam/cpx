@@ -15,7 +15,7 @@ class Metadata
 
     public static function open(): Metadata
     {
-        $metadataFile = cpx_dir('.cpx_metadata.json');
+        $metadataFile = cpx_path('.cpx_metadata.json');
 
         if (file_exists($metadataFile)) {
             $json = json_decode(file_get_contents($metadataFile), true);
@@ -38,9 +38,27 @@ class Metadata
         return new Metadata();
     }
 
+    function updateLastCheckTime(Package $package, string $type = 'run'): Metadata
+    {
+        $packageKey = $package->fullPackageString();
+        $currentTime = date('Y-m-d H:i:s');
+
+        if (!isset($this->packages[$packageKey])) {
+            $this->packages[$packageKey] = new PackageMetadata($package);
+        }
+
+        if ($type === 'run') {
+            $this->packages[$packageKey]->lastRunAt = $currentTime;
+        } else {
+            $this->packages[$packageKey]->lastUpdatedAt = $currentTime;
+        }
+
+        return $this;
+    }
+
     public function save(): void
     {
-        $metadataFile = cpx_dir('.cpx_metadata.json');
+        $metadataFile = cpx_path('.cpx_metadata.json');
         file_put_contents($metadataFile, json_encode($this->toArray(), JSON_PRETTY_PRINT));
     }
 

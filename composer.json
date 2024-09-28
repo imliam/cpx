@@ -1,6 +1,7 @@
 {
     "name": "cpx/cpx",
     "description": "Run any command from any composer package, even if it's not installed in your project.",
+    "version": "0.1.0",
     "type": "library",
     "license": "MIT",
     "keywords": [
@@ -11,7 +12,8 @@
     ],
     "support": {
         "issues": "https://github.com/imliam/cpx/issues",
-        "source": "https://github.com/imliam/cpx"
+        "source": "https://github.com/imliam/cpx",
+        "docs": "https://cpx.dev"
     },
     "authors": [
         {

@@ -4,6 +4,7 @@ use Cpx\Commands\ExecCommand;
 use Cpx\Composer;
 use Cpx\Exceptions\ComposerInstallException;
 use Cpx\Metadata;
+use Cpx\PhpExecutionHelper;
 
 if (!function_exists('dd')) {
     /** Dump and die. */
@@ -25,7 +26,7 @@ if (!function_exists('composer_require')) {
         sort($packages);
 
         $hash = md5(implode(' ', $packages));
-        $sandboxDir = cpx_dir(".exec_cache/{$hash}");
+        $sandboxDir = cpx_path(".exec_cache/{$hash}");
 
         $metadata = Metadata::open();
 
@@ -70,16 +71,16 @@ if (!function_exists('composer_require')) {
             throw new Exception("Autoload file not found in {$sandboxDir}/vendor/. Composer installation may have failed.");
         }
 
-        if (isset(ExecCommand::$classAliasAutoloader)) {
-            ExecCommand::$classAliasAutoloader->addAliases($sandboxDir);
+        if (isset(PhpExecutionHelper::$classAliasAutoloader)) {
+            PhpExecutionHelper::$classAliasAutoloader->addAliases($sandboxDir);
         }
 
         require_once $autoloadFile;
     }
 }
 
-if (!function_exists('cpx_dir')) {
-    function cpx_dir(string $path = ''): string
+if (!function_exists('cpx_path')) {
+    function cpx_path(string $path = ''): string
     {
         $home = $_SERVER['HOME'] ?? __DIR__;
 

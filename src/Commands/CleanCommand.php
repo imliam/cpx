@@ -31,7 +31,7 @@ class CleanCommand extends Command
             $lastRun = strtotime($packageMetadata->lastRunAt ?? '1970-01-01 00:00:00');
 
             if ($this->console->hasOption('all') || $lastRun < $timeLimit) {
-                $packageDirectory = cpx_dir(".exec_cache/{$sandboxDir}");
+                $packageDirectory = cpx_path(".exec_cache/{$sandboxDir}");
                 exec("rm -rf {$packageDirectory}");
                 $this->line(Command::COLOR_GREEN . "Removing exec sandbox cache {$sandboxDir}...");
                 unset($metadata->execCache[$sandboxDir]);
