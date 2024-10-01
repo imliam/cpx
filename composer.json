@@ -1,7 +1,7 @@
 {
     "name": "cpx/cpx",
     "description": "Run any command from any composer package, even if it's not installed in your project.",
-    "version": "0.1.0",
+    "version": "1.0.0",
     "type": "library",
     "license": "MIT",
     "keywords": [
