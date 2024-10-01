@@ -1,0 +1,7 @@
+* text=auto eol=lf
+
+.gitattributes export-ignore
+.github/ export-ignore
+.gitignore export-ignore
+banner.png export-ignore
+README.md export-ignore
