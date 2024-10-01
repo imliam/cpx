@@ -28,39 +28,24 @@ function printColor(string $message, string $color = "\033[1;32m"): void
 array_shift($argv);
 $console = Console::parse($argv ?? []);
 
-$command = match($console->command) {
-    'list' => ListCommand::class,
-    'help' => HelpCommand::class,
-    'clean' => CleanCommand::class,
-    'aliases' => AliasesCommand::class,
-    'update' => UpdateCommand::class,
-    'upgrade' => UpgradeCommand::class,
-    'exec' => ExecCommand::class,
-    'format', 'fmt' => FormatCommand::class,
-    'check', 'analyze', 'analyse' => CheckCommand::class,
-    'test' => TestCommand::class,
-    'tinker' => TinkerCommand::class,
-    'version' => VersionCommand::class,
-    default => function () use ($console) {
-        if (file_exists(realpath($console->command)) && !is_dir(realpath($console->command))) {
-            return (new ExecCommand(Console::parse("exec {$console->command} {$console->getCommandInput()}")))();
-        } elseif (array_key_exists($console->command, PackageAliases::$packages)) {
-            Package::parse(PackageAliases::$packages[$console->command]['package'])->runCommand($console);
-            return;
-        } elseif (str_contains($console->command, '/')) {
-            // Run the command, assuming the default bin and forwarding args
-            Package::parse($console->command)->runCommand($console);
-            return;
-        }
-
-        $cpxConsole = Console::parse("cpx {$console}");
-
-        if ($cpxConsole->hasOption('version') || $cpxConsole->hasOption('v')) {
-            return (new VersionCommand($console))();
-        }
-
-        return (new HelpCommand($console))(true);
-    },
+$command = match (true) {
+    $console->command === 'list' => ListCommand::class,
+    $console->command === 'help' => HelpCommand::class,
+    $console->command === 'clean' => CleanCommand::class,
+    $console->command === 'aliases' => AliasesCommand::class,
+    $console->command === 'update' => UpdateCommand::class,
+    $console->command === 'upgrade' => UpgradeCommand::class,
+    $console->command === 'exec' => ExecCommand::class,
+    $console->command === 'format' || $console->command === 'fmt' => FormatCommand::class,
+    $console->command === 'check' || $console->command === 'analyze' || $console->command === 'analyse' => CheckCommand::class,
+    $console->command === 'test' => TestCommand::class,
+    $console->command === 'tinker' => TinkerCommand::class,
+    $console->command === 'version' => VersionCommand::class,
+    file_exists(realpath($console->command)) && !is_dir(realpath($console->command)) => (new ExecCommand(Console::parse("exec {$console->command} {$console->getCommandInput()}")))(),
+    array_key_exists($console->command, PackageAliases::$packages) => Package::parse(PackageAliases::$packages[$console->command]['package'])->runCommand($console),
+    str_contains($console->command, '/') => Package::parse($console->command)->runCommand($console),
+    $console->command === '--version' || $console->command === '-v' || $console->hasOption('version') || $console->hasOption('v') => VersionCommand::class,
+    default => (new HelpCommand($console))(true),
 };
 
 try {
