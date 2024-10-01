@@ -18,7 +18,21 @@ use Cpx\Commands\AliasesCommand;
 use Cpx\Commands\UpgradeCommand;
 use Cpx\Commands\VersionCommand;
 
-require_once __DIR__ . '/vendor/autoload.php';
+if (isset($GLOBALS['_composer_autoload_path'])) {
+    require_once $GLOBALS['_composer_autoload_path'];
+
+    unset($GLOBALS['_composer_autoload_path']);
+} else {
+    foreach ([__DIR__ . '/../../autoload.php', __DIR__ . '/../vendor/autoload.php', __DIR__ . '/vendor/autoload.php'] as $file) {
+        if (file_exists($file)) {
+            require_once $file;
+
+            break;
+        }
+    }
+
+    unset($file);
+}
 
 function printColor(string $message, string $color = "\033[1;32m"): void
 {
