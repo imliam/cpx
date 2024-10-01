@@ -5,6 +5,7 @@ namespace Cpx\Commands;
 use Cpx\Console;
 use Cpx\Package;
 use Cpx\Commands\Command;
+use Cpx\Composer;
 
 class TinkerCommand extends Command
 {
@@ -12,6 +13,6 @@ class TinkerCommand extends Command
     {
         $psyshConfig = realpath(__DIR__ . '/../../files/psysh-config.php');
 
-        return runCommand(Package::parse('psy/psysh'), Console::parse("psysh --config {$psyshConfig}"));
+        return Package::parse('psy/psysh')->runCommand(Console::parse("psysh --config {$psyshConfig}"));
     }
 }

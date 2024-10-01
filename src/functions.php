@@ -1,26 +1,17 @@
 <?php
 
-use Cpx\Commands\ExecCommand;
 use Cpx\Composer;
 use Cpx\Exceptions\ComposerInstallException;
 use Cpx\Metadata;
 use Cpx\PhpExecutionHelper;
 
-if (!function_exists('dd')) {
-    /** Dump and die. */
-    function dd(mixed ...$args): void
-    {
-        die(var_dump(...($args ?? [])));
-    }
-}
-
-/**
- * Dynamically requires Composer packages in a sandboxed environment.
- *
- * @param string ...$packages List of packages to require in the format vendor/package[:version].
- * @throws Exception If the Composer require command fails.
- */
 if (!function_exists('composer_require')) {
+    /**
+     * Dynamically requires Composer packages in a sandboxed environment.
+     *
+     * @param string ...$packages List of packages to require in the format vendor/package[:version].
+     * @throws Exception If the Composer require command fails.
+     */
     function composer_require(string ...$packages): void
     {
         sort($packages);

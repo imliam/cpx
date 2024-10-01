@@ -126,7 +126,7 @@ class Console
 
     public function getCommandInput(): string
     {
-        return $this->getArgumentsString() . $this->getOptionsString() . $this->getFlagsString();
+        return implode(' ', [$this->getArgumentsString(), $this->getOptionsString(), $this->getFlagsString()]);
     }
 
     public function getArgumentsString(): string
