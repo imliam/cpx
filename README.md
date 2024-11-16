@@ -100,6 +100,23 @@ When using these commands, you get the following benefits:
 
 `cpx help` will show a list of all the commands available in cpx.
 
+## Advanced Usage:
+
+### Specifying a custom repository
+
+If you want to use a custom repository to install packages from, you can specify it using the `--repo` flag:
+
+1. composer registries: `cpx <vend>/<pack> --repo=https://composer.example.com`
+   - supported schemes: `http:`, `https:`
+2. git repos: `cpx <vend>/<pack>  --repo=git+https://github.com/<vendor>/<repo>`
+   - supported schemes: `git+http:`, `git+https:`, `ssh:`, `git+ssh:`
+3. local paths: `cpx <vend>/<pack>  --repo=path:/some/place/on/disk`
+   - supported schemes: `file:`, `path:`
+
+This also extends to the new command:
+
+`cpx new <vend>/<pack> project-name --repo=git+https://gitlab.com/<vendor>/<repo>`
+
 ## FAQ:
 
 ### Why not just use global composer?
@@ -128,5 +145,10 @@ Yes, cpx will manage the package versions for you, so you can run any version of
 The code is deliberately written in a way that it doesn't need any dependencies to run, so it has no chance of conflicting with your global composer dependencies if you use them for other things, as this is one of the problems cpx is trying to solve.
 
 ## Credits
+
 - [Liam Hammett](https://github.com/imliam)
 - [All Contributors](https://github.com/imliam/cpx/contributors)
+
+```
+
+```
