@@ -10,7 +10,7 @@ class UpdateCommand extends Command
     public function __invoke()
     {
         match(true) {
-            str_contains($this->console->arguments[0] ?? '', '/') => $this->updatePackage(Package::parse($this->console->arguments[0])),
+            str_contains($this->console->arguments[0] ?? '', '/') => $this->updatePackage(Package::parse($this->console->arguments[0], $this->console->options)),
             !empty($this->console->arguments[0]) => $this->updateVendor($this->console->arguments[0]),
             default => $this->updateAllPackages(),
         };
