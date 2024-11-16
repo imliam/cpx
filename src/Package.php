@@ -171,7 +171,7 @@ class Package
 
         $didChangeRepo = Repository::apply($this->repository, $installDir);
 
-        if ($didChangeRepo || ($updateCheck && $this->shouldCheckForUpdates($this))) {
+        if ($updateCheck && ($didChangeRepo || $this->shouldCheckForUpdates($this))) {
             printColor("Checking for updates for {$this}...");
             $previousVersion = Composer::getCurrentVersion($installDir);
             Repository::apply($this->repository, $installDir);
