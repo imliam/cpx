@@ -12,9 +12,10 @@ class Package
         public string $vendor,
         public string $name,
         public ?string $version = null,
+        public ?Repository $repository = null,
     ) {}
 
-    public static function parse(string $str): Package
+    public static function parse(string $str, $options = null): Package
     {
         if (empty($str)) {
             throw new InvalidArgumentException('A package name must be provided.');
@@ -30,6 +31,11 @@ class Package
 
         if ($version === '') {
             $version = null;
+        }
+
+        if (is_array($options) && isset($options['repo'])) {
+            $repository = Repository::parse($options['repo']);
+            return new Package($vendor, $name, $version, $repository);
         }
 
         return new Package($vendor, $name, $version);
@@ -146,7 +152,10 @@ class Package
                 'config' => [
                     'allow-plugins' => true,
                 ],
-            ]));
+            ], JSON_PRETTY_PRINT));
+
+            Repository::apply($this->repository, $installDir);
+
             // Composer::runCommand("init --name=cpx-{$package->name} --version=1.0.0 --no-interaction", $installDir);
 
             if ($this->version === null) {
@@ -156,9 +165,16 @@ class Package
             }
 
             Metadata::open()->updateLastCheckTime($this, 'updated')->save();
-        } elseif ($updateCheck && $this->shouldCheckForUpdates($this)) {
+
+            return $installDir;
+        }
+
+        $didChangeRepo = Repository::apply($this->repository, $installDir);
+
+        if ($didChangeRepo || ($updateCheck && $this->shouldCheckForUpdates($this))) {
             printColor("Checking for updates for {$this}...");
             $previousVersion = Composer::getCurrentVersion($installDir);
+            Repository::apply($this->repository, $installDir);
             Composer::runCommand("update", $installDir);
             $newVersion = Composer::getCurrentVersion($installDir);
 
@@ -169,10 +185,10 @@ class Package
             }
 
             Metadata::open()->updateLastCheckTime($this, 'updated')->save();
-        } else {
-            printColor("{$this} is already installed and doesn't need updating.");
+            return $installDir;
         }
 
+        printColor("{$this} is already installed and doesn't need updating.");
         return $installDir;
     }
 

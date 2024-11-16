@@ -24,7 +24,7 @@ class NewCommand extends Command
             throw new \Exception("Invalid package name: {$str}");
         }
 
-        $package = Package::parse($str);
+        $package = Package::parse($str, $console->options);
 
         $installDir = $package->installOrUpdatePackage();
 
