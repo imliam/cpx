@@ -6,7 +6,7 @@ use Exception;
 
 class Composer
 {
-    public static function runCommand(string $command, string $directory = null): array
+    public static function runCommand(string $command, ?string $directory = null): array
     {
         $output = [];
         $workingDirectory = $directory ? "--working-dir={$directory}" : '';
