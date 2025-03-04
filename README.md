@@ -85,6 +85,10 @@ cpx gives you multiple ways to run PHP code quickly, perfect for running scratch
 - `cpx exec -r <raw php code>` will execute the given PHP code.
 - `cpx tinker` will open an interactive REPL in the terminal for your project.
 
+### cpx new
+
+`cpx new <vendor>/<package> <project-name>` or `cpx new <vendor>/<package>:<version> <project-name>` will create a new project from the specified package. This is useful for quickly creating a new project without needing to install the package globally.
+
 When using these commands, you get the following benefits:
 
 - **Automatic Autoloaders** - When running a PHP file, it will automatically detect and use Composer's autoloader if it exists in the current or a parent directory
